@@ -1,0 +1,20 @@
+{
+  "name": "UniSchedule",
+  "short_name": "UniSchedule",
+  "description": "Orarul facultății — vizualizare rapidă, filtrare pe grupă și săptămâna pară/impară.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#06080f",
+  "background_color": "#06080f",
+  "lang": "ro",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
