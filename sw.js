@@ -1,6 +1,6 @@
 // UniSchedule PWA service worker.
 // Bump this value whenever the app shell changes. Old versions are removed on activate.
-const CACHE_NAME = 'unischedule-v2';
+const CACHE_NAME = 'unischedule-v3';
 const ASSETS = [
   './',
   './index.html',

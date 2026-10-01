@@ -84,6 +84,21 @@ button:focus-visible { outline: 3px solid #8fc9ae; outline-offset: 3px; }
 .card-details { display: flex; flex-wrap: wrap; gap: 8px 14px; padding-top: 10px; border-top: 1px solid #343a43; }
 .card-detail { display: inline-flex; align-items: flex-start; gap: 6px; min-width: 0; color: #b2bbc5; font-size: .79rem; line-height: 1.35; font-weight: 550; }
 .card-detail .icon { flex: 0 0 auto; font-size: .88rem; }
+.card-note { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 8px; margin-top: 12px; padding: 10px; border: 1px solid #343a43; border-radius: 12px; background: #1b1f25; }
+.card-note-text { grid-column: 1; margin: 0; color: #d1d8df; font-size: .82rem; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+.card-note-text.is-empty { color: var(--muted); font-style: italic; }
+.card-note-edit, .card-note-save, .card-note-cancel, .card-note-delete { min-height: 36px; padding: 0 10px; border: 1px solid var(--line); border-radius: 10px; font-size: .75rem; font-weight: 700; }
+.card-note-edit { grid-column: 2; background: #263b36; color: var(--green); white-space: nowrap; }
+.card-note-editor { grid-column: 1 / -1; display: grid; gap: 8px; }
+.card-note-input { width: 100%; resize: vertical; padding: 10px; border: 1px solid #48515c; border-radius: 10px; background: #171a1f; color: var(--ink); font: inherit; font-size: .85rem; line-height: 1.45; }
+.card-note-input:focus-visible { outline: 2px solid var(--green); outline-offset: 1px; }
+.card-note-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+.card-note-save { border-color: #267e70; background: #267e70; color: #f4fffc; }
+.card-note-cancel { background: #303640; }
+.card-note-delete { margin-left: auto; background: transparent; color: #f09a8b; }
+.card-note-edit:disabled, .card-note-save:disabled, .card-note-delete:disabled { cursor: not-allowed; opacity: .55; }
+.card-note-error { margin: 0; color: #f09a8b; font-size: .78rem; line-height: 1.4; }
+.card-note-warning { grid-column: 1 / -1; }
 
 .empty-state { padding: 28px 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); text-align: center; }
 .empty-state .emoji { display: block; margin-bottom: 10px; font-size: 2.6rem; }

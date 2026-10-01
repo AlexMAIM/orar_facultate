@@ -11,6 +11,7 @@
   const DAY_SHORT  = ['Dum', 'Lun', 'Mar', 'Mie', 'Joi', 'Vin', 'Sâm'];
   const DAY_KEYS   = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   const MONTH_SHORT = ['Ian','Feb','Mar','Apr','Mai','Iun','Iul','Aug','Sep','Oct','Nov','Dec'];
+  const NOTES_STORAGE_KEY = 'uniScheduleNotes';
 
   // Week‑day indices that have schedule (Mon=1 … Fri=5)
   const WEEKDAYS = [1, 2, 3, 4, 5];
@@ -22,6 +23,8 @@
   let semesterWeeks     = [];     // all weeks of the semester (generated)
   let currentWeekIndex  = 0;      // index in semesterWeeks of the viewing week
   let todayWeekIndex    = -1;     // index of today's week
+  let notesStorageError = '';
+  let scheduleNotes     = loadScheduleNotes();
 
   // ── DOM references ──────────────────────────────────────
   let $onboarding, $app, $dayTabs, $scheduleContainer;
@@ -198,6 +201,163 @@
   }
 
   // ── Rendering ───────────────────────────────────────────
+
+  function loadScheduleNotes() {
+    try {
+      const serialized = localStorage.getItem(NOTES_STORAGE_KEY);
+      if (!serialized) return {};
+
+      const saved = JSON.parse(serialized);
+      if (!saved || saved.version !== 1 || !saved.entries || typeof saved.entries !== 'object' || Array.isArray(saved.entries)
+        || Object.values(saved.entries).some(note => typeof note !== 'string')) {
+        throw new Error('Formatul notițelor salvate nu este valid.');
+      }
+      return saved.entries;
+    } catch (error) {
+      notesStorageError = 'Notițele salvate nu au putut fi citite. Datele existente au fost păstrate.';
+      console.error('Nu s-au putut încărca notițele.', error);
+      return {};
+    }
+  }
+
+  function getScheduleItemKey(dayKey, item) {
+    return JSON.stringify([dayKey, item.subject, item.type, item.time, item.room]);
+  }
+
+  function saveScheduleNotes(nextNotes) {
+    try {
+      localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify({
+        version: 1,
+        entries: nextNotes
+      }));
+    } catch (error) {
+      notesStorageError = 'Notița nu a putut fi salvată. Verifică spațiul disponibil în browser.';
+      console.error('Nu s-au putut salva notițele.', error);
+      return false;
+    }
+
+    scheduleNotes = nextNotes;
+    notesStorageError = '';
+    return true;
+  }
+
+  function createNoteSection(dayKey, item) {
+    const itemKey = getScheduleItemKey(dayKey, item);
+    const noteSection = document.createElement('section');
+    noteSection.className = 'card-note';
+
+    const noteText = document.createElement('p');
+    noteText.className = 'card-note-text';
+    noteText.textContent = scheduleNotes[itemKey] || 'Nicio notiță adăugată.';
+    if (!scheduleNotes[itemKey]) noteText.classList.add('is-empty');
+
+    const storageWarning = document.createElement('p');
+    storageWarning.className = 'card-note-error card-note-warning';
+    storageWarning.textContent = notesStorageError;
+    if (!notesStorageError) storageWarning.classList.add('hidden');
+
+    const editButton = document.createElement('button');
+    editButton.className = 'card-note-edit';
+    editButton.type = 'button';
+    editButton.textContent = scheduleNotes[itemKey] ? 'Editează' : '＋ Notiță';
+    editButton.setAttribute('aria-label', `${scheduleNotes[itemKey] ? 'Editează' : 'Adaugă'} notiță pentru ${item.subject}`);
+
+    const editor = document.createElement('div');
+    editor.className = 'card-note-editor hidden';
+
+    const textarea = document.createElement('textarea');
+    textarea.className = 'card-note-input';
+    textarea.rows = 3;
+    textarea.placeholder = 'Scrie o notiță pentru această activitate…';
+    textarea.setAttribute('aria-label', `Notiță pentru ${item.subject}`);
+    textarea.value = scheduleNotes[itemKey] || '';
+
+    const errorMessage = document.createElement('p');
+    errorMessage.className = 'card-note-error';
+    errorMessage.setAttribute('role', 'alert');
+    errorMessage.classList.add('hidden');
+
+    const actions = document.createElement('div');
+    actions.className = 'card-note-actions';
+
+    const saveButton = document.createElement('button');
+    saveButton.className = 'card-note-save';
+    saveButton.type = 'button';
+    saveButton.textContent = 'Salvează';
+
+    const cancelButton = document.createElement('button');
+    cancelButton.className = 'card-note-cancel';
+    cancelButton.type = 'button';
+    cancelButton.textContent = 'Anulează';
+
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'card-note-delete';
+    deleteButton.type = 'button';
+    deleteButton.textContent = 'Șterge notița';
+    if (!scheduleNotes[itemKey]) deleteButton.classList.add('hidden');
+
+    editButton.disabled = Boolean(notesStorageError);
+    saveButton.disabled = Boolean(notesStorageError);
+    deleteButton.disabled = Boolean(notesStorageError);
+
+    editButton.addEventListener('click', () => {
+      textarea.value = scheduleNotes[itemKey] || '';
+      errorMessage.classList.add('hidden');
+      editor.classList.remove('hidden');
+      textarea.focus();
+    });
+
+    saveButton.addEventListener('click', () => {
+      const nextNotes = { ...scheduleNotes };
+      const text = textarea.value.trim();
+      if (text) {
+        nextNotes[itemKey] = text;
+      } else {
+        delete nextNotes[itemKey];
+      }
+
+      if (!saveScheduleNotes(nextNotes)) {
+        errorMessage.textContent = notesStorageError;
+        errorMessage.classList.remove('hidden');
+        return;
+      }
+
+      noteText.textContent = text || 'Nicio notiță adăugată.';
+      noteText.classList.toggle('is-empty', !text);
+      editButton.textContent = text ? 'Editează' : '＋ Notiță';
+      editButton.setAttribute('aria-label', `${text ? 'Editează' : 'Adaugă'} notiță pentru ${item.subject}`);
+      deleteButton.classList.toggle('hidden', !text);
+      editor.classList.add('hidden');
+    });
+
+    cancelButton.addEventListener('click', () => {
+      textarea.value = scheduleNotes[itemKey] || '';
+      errorMessage.classList.add('hidden');
+      editor.classList.add('hidden');
+    });
+
+    deleteButton.addEventListener('click', () => {
+      const nextNotes = { ...scheduleNotes };
+      delete nextNotes[itemKey];
+      if (!saveScheduleNotes(nextNotes)) {
+        errorMessage.textContent = notesStorageError;
+        errorMessage.classList.remove('hidden');
+        return;
+      }
+
+      noteText.textContent = 'Nicio notiță adăugată.';
+      noteText.classList.add('is-empty');
+      editButton.textContent = '＋ Notiță';
+      editButton.setAttribute('aria-label', `Adaugă notiță pentru ${item.subject}`);
+      deleteButton.classList.add('hidden');
+      editor.classList.add('hidden');
+    });
+
+    actions.append(saveButton, cancelButton, deleteButton);
+    editor.append(textarea, errorMessage, actions);
+    noteSection.append(noteText, storageWarning, editButton, editor);
+    return noteSection;
+  }
 
   /** Render the calendar week strip. */
   function renderCalendarStrip() {
@@ -439,6 +599,7 @@
         </div>
       `;
 
+      card.appendChild(createNoteSection(dayKey, item));
       $scheduleContainer.appendChild(card);
     });
   }
@@ -565,7 +726,9 @@
     renderAll();
 
     // Refresh every minute (for "ACUM" badge)
-    setInterval(() => renderSchedule(), 60000);
+    setInterval(() => {
+      if (!$scheduleContainer.querySelector('.card-note-editor:not(.hidden)')) renderSchedule();
+    }, 60000);
   }
 
   // ── DOM Ready ───────────────────────────────────────────
