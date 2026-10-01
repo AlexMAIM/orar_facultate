@@ -116,19 +116,25 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        const hadController = Boolean(navigator.serviceWorker.controller);
         let reloadedForUpdate = false;
 
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (hadController && !reloadedForUpdate) {
-            reloadedForUpdate = true;
-            window.location.reload();
-          }
+          if (reloadedForUpdate) return;
+          reloadedForUpdate = true;
+          window.location.reload();
         });
 
         navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
           .then((registration) => registration.update())
-          .catch(() => {});
+          .catch((error) => console.error('Nu s-a putut verifica actualizarea aplicației.', error));
+
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') {
+            navigator.serviceWorker.ready
+              .then((registration) => registration.update())
+              .catch((error) => console.error('Nu s-a putut verifica actualizarea aplicației.', error));
+          }
+        });
       });
     }
   </script>

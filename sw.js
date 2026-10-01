@@ -1,6 +1,6 @@
 // UniSchedule PWA service worker.
 // Bump this value whenever the app shell changes. Old versions are removed on activate.
-const CACHE_NAME = 'unischedule-v2';
+const CACHE_NAME = 'unischedule-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -11,7 +11,9 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(
+    ASSETS.map((asset) => new Request(asset, { cache: 'reload' }))
+  )));
   self.skipWaiting();
 });
 
@@ -33,7 +35,7 @@ self.addEventListener('fetch', (event) => {
   event.respondWith((async () => {
     const cache = await caches.open(CACHE_NAME);
     try {
-      const response = await fetch(request);
+      const response = await fetch(request, { cache: 'no-cache' });
       if (response.ok && response.type === 'basic') {
         await cache.put(request, response.clone());
       }
