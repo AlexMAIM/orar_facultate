@@ -1,9 +1,6 @@
-// ============================================================
-//  sw.js — Service Worker for UniSchedule PWA
-//  Caches app shell for offline / instant loading.
-// ============================================================
-
-const CACHE_NAME = 'unischedule-v1';
+// UniSchedule PWA service worker.
+// Bump this value whenever the app shell changes. Old versions are removed on activate.
+const CACHE_NAME = 'unischedule-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -13,39 +10,38 @@ const ASSETS = [
   './manifest.json'
 ];
 
-// Install — pre-cache app shell
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
   self.skipWaiting();
 });
 
-// Activate — clean old caches
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
-      )
-    )
-  );
-  self.clients.claim();
+  event.waitUntil((async () => {
+    const cacheNames = await caches.keys();
+    await Promise.all(cacheNames
+      .filter((name) => name.startsWith('unischedule-') && name !== CACHE_NAME)
+      .map((name) => caches.delete(name)));
+    await self.clients.claim();
+  })());
 });
 
-// Fetch — cache-first, falling back to network
+// Prefer the latest files whenever online, while keeping the last good copy for offline use.
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
+  const request = event.request;
+  if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
+
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    try {
+      const response = await fetch(request);
+      if (response.ok && response.type === 'basic') {
+        await cache.put(request, response.clone());
+      }
+      return response;
+    } catch (error) {
+      const cached = await cache.match(request);
       if (cached) return cached;
-      return fetch(event.request).then((response) => {
-        // Cache new requests dynamically
-        if (response && response.status === 200 && response.type === 'basic') {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-        }
-        return response;
-      });
-    })
-  );
+      throw error;
+    }
+  })());
 });
