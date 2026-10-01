@@ -10,6 +10,43 @@
 // Data de start a semestrului — Luni, Săptămâna 1 (impară)
 const SEMESTER_START = new Date(2026, 8, 28); // 28 Septembrie 2026
 
+// ── Calendarul Academic — Semestrul I, 2026–2027 ────────
+// type: "teaching" = activitate didactică (se numără săptămânile)
+//       "vacation" = vacanță (NU se numără)
+//       "exams"    = sesiune examene (NU se numără)
+const ACADEMIC_PERIODS = [
+  {
+    start: new Date(2026, 8, 28),   // 28 Sep 2026
+    end:   new Date(2026, 11, 19),  // 19 Dec 2026
+    type: "teaching",
+    teachingWeekStart: 1            // prima săptămână didactică din acest bloc
+  },
+  {
+    start: new Date(2026, 11, 20),  // 20 Dec 2026
+    end:   new Date(2027, 0, 3),    //  3 Ian 2027
+    type: "vacation",
+    label: "Vacanță de Iarnă 🎄"
+  },
+  {
+    start: new Date(2027, 0, 4),    //  4 Ian 2027
+    end:   new Date(2027, 0, 16),   // 16 Ian 2027
+    type: "teaching",
+    teachingWeekStart: 13           // continuare de la S13
+  },
+  {
+    start: new Date(2027, 0, 18),   // 18 Ian 2027
+    end:   new Date(2027, 1, 7),    //  7 Feb 2027
+    type: "exams",
+    label: "Sesiune Examene 📝"
+  },
+  {
+    start: new Date(2027, 1, 8),    //  8 Feb 2027
+    end:   new Date(2027, 1, 14),   // 14 Feb 2027
+    type: "vacation",
+    label: "Vacanță Intersemestrială 🌴"
+  }
+];
+
 const scheduleData = {
 
   // ═══════════════════════════════════════════════════════
