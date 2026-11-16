@@ -90,30 +90,13 @@ const scheduleData = {
       week: "even"
     },
     {
-      time: "16:00 – 18:00",
+      time: "18:00 – 20:00",
       subject: "Materiale și Structuri Inteligente",
-      type: "seminar",
+      type: "laborator",
+      typeLabel: "Seminar + laborator",
       room: "G025",
       professor: "F.P.",
       group: "all",
-      week: "odd"
-    },
-    {
-      time: "18:00 – 20:00",
-      subject: "Materiale și Structuri Inteligente",
-      type: "laborator",
-      room: "G025",
-      professor: "F.P.",
-      group: "B",
-      week: "odd"
-    },
-    {
-      time: "18:00 – 20:00",
-      subject: "Materiale și Structuri Inteligente",
-      type: "laborator",
-      room: "G025",
-      professor: "F.P.",
-      group: "A",
       week: "even"
     }
   ],

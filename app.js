@@ -416,7 +416,7 @@
       const currentCls  = isCurrentClass(item.time) ? ' is-current' : '';
       card.className    = `schedule-card ${typeClass}${currentCls}`;
 
-      const typeLabel = item.type.charAt(0).toUpperCase() + item.type.slice(1);
+      const typeLabel = item.typeLabel || item.type.charAt(0).toUpperCase() + item.type.slice(1);
 
       card.innerHTML = `
         <div class="card-header">
